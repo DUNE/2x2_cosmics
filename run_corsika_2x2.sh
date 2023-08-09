@@ -14,8 +14,12 @@
 #
 # A. Mastbaum <mastbaum@physics.rutgers.edu>, April 2021
 
+#echo "Setting up container for running CORSIKA..."
+#shifter --image=ethlu/sl7_dune:a --module=cvmfs -- /bin/bash
+
 set -e
-OUTDIR="/pnfs/dune/persistent/users/sfogarty/cosmics/2x2/"
+INPUTDIR="/global/cfs/cdirs/dune/users/sfogarty/cosmics/inputs"
+OUTDIR="/global/cfs/cdirs/dune/users/sfogarty/cosmics/2x2"
 USERNAME=$USER
 
 FIRST=$1
@@ -134,7 +138,7 @@ export PATH=$PATH:$GEANT4_FQ_DIR/bin
 ##################################################
 
 # Get the binaries & other files that are needed
-#${CP} ${INPUTDIR}/corsikaConverter corsikaConverter
+${CP} ${INPUTDIR}/corsikaConverter corsikaConverter
 chmod +x corsikaConverter
 
 #${CP} ${INPUTDIR}/Merged2x2MINERvA_v2_withRock.gdml Merged2x2MINERvA_v2_withRock.gdml
@@ -165,6 +169,11 @@ TIME_ROOTRACKER=`date +%s`
 
 ./corsikaConverter DAT000001
 
+ifdh_mkdir_p ${OUTDIR}/corsika/${RDIR}
+ifdh_mkdir_p ${OUTDIR}/rootracker/${RDIR}
+
 ROOTRACKER_FILE="rootracker.${RNDSEED}.root"
-mv DAT000001.root ${OUTDIR}/${ROOTRACKER_FILE}
-rm DAT000001
+${CP} DAT000001 ${OUTDIR}/corsika/${RDIR}/${CORSIKA_FILE}
+${CP} ${ROOTRACKER_FILE} ${OUTDIR}/rootracker/${RDIR}/${ROOTRACKER_FILE}
+
+
