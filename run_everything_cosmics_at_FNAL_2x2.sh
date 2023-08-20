@@ -1,7 +1,8 @@
-#/usr/bin/env bash
+#!/usr/bin/env bash
+
 # Run everything, CORSIKA edition
 #
-# Example usage:
+# Example usage on Fermilab computing:
 # 
 #     jobsub_submit --group dune --role=Analysis -N 100 --OS=SL7 \
 #                   --expected-lifetime=12h --memory=2000MB file://run_everything_cosmics.sh FIRST NSHOW TEST
@@ -16,8 +17,9 @@
 
 set -e
 
-INPUTDIR="/pnfs/dune/persistent/users/sfogarty/cosmics/inputs/"
-OUTDIR="/pnfs/dune/persistent/users/sfogarty/cosmics/2x2/"
+# replace with your preferred input and output directories
+INPUTDIR="/path/to/input/dir"
+OUTDIR="/path/to/output/dir"
 USERNAME=$USER
 
 FIRST=$1
@@ -136,12 +138,12 @@ export PATH=$PATH:$GEANT4_FQ_DIR/bin
 ##################################################
 
 # Get the binaries & other files that are needed
-#${CP} ${INPUTDIR}/corsikaConverter corsikaConverter
-#chmod +x corsikaConverter
+${CP} ${INPUTDIR}/corsikaConverter corsikaConverter
+chmod +x corsikaConverter
 
-#${CP} ${INPUTDIR}/dumpTree.py dumpTree.py
+${CP} ${INPUTDIR}/dumpTree.py dumpTree.py
 
-#${CP} ${INPUTDIR}/Merged2x2MINERvA_v2_withRock.gdml Merged2x2MINERvA_v2_withRock.gdml
+${CP} ${INPUTDIR}/Merged2x2MINERvA_v2_withRock.gdml Merged2x2MINERvA_v2_withRock.gdml
 
 ##################################################
 
@@ -206,12 +208,12 @@ edep-sim \
 ##################################################
 
 ## Run HDF5 conversion
-#pip install fire
-#pip install h5py
+pip install fire
+pip install h5py
 #
-#TIME_HDF5=`date +%s`
-#H5_FILE=${EDEP_FILE%.root}.h5
-#python dumpTree.py ${EDEP_FILE} ${H5_FILE}
+TIME_HDF5=`date +%s`
+H5_FILE=${EDEP_FILE%.root}.h5
+python dumpTree.py ${EDEP_FILE} ${H5_FILE}
 
 ##################################################
 
@@ -222,23 +224,23 @@ TIME_COPY=`date +%s`
 ifdh_mkdir_p ${OUTDIR}/corsika/${RDIR}
 ifdh_mkdir_p ${OUTDIR}/rootracker/${RDIR}
 ifdh_mkdir_p ${OUTDIR}/edep/${RDIR}
-#ifdh_mkdir_p ${OUTDIR}/h5/${RDIR}
+ifdh_mkdir_p ${OUTDIR}/h5/${RDIR}
 
-${CP} DAT000001 ${OUTDIR}/corsika/${RDIR}/${CORSIKA_FILE}
-${CP} ${ROOTRACKER_FILE} ${OUTDIR}/rootracker/${RDIR}/${ROOTRACKER_FILE}
-${CP} ${EDEP_FILE} ${OUTDIR}/edep/${RDIR}/${EDEP_FILE}
-#${CP} ${H5_FILE} ${OUTDIR}/h5/${RDIR}/${H5_FILE}
+{CP} DAT000001 ${OUTDIR}/corsika/${RDIR}/${CORSIKA_FILE}
+{CP} ${ROOTRACKER_FILE} ${OUTDIR}/rootracker/${RDIR}/${ROOTRACKER_FILE}
+{CP} ${EDEP_FILE} ${OUTDIR}/edep/${RDIR}/${EDEP_FILE}
+${CP} ${H5_FILE} ${OUTDIR}/h5/${RDIR}/${H5_FILE}
 
 TIME_END=`date +%s`
 # Print out a single thing that says the time of each step
 TIME_S=$((${TIME_CORSIKA}-${TIME_START}))
 TIME_G=$((${TIME_ROOTRACKER}-${TIME_CORSIKA}))
 TIME_R=$((${TIME_EDEPSIM}-${TIME_ROOTRACKER}))
-#TIME_H=$((${TIME_HDF5}-${TIME_EDEPSIM}))
+TIME_H=$((${TIME_HDF5}-${TIME_EDEPSIM}))
 TIME_C=$((${TIME_END}-${TIME_COPY}))
 echo "Start-up time: ${TIME_S}"
 echo "corsika time: ${TIME_G}"
 echo "corsika2RooTracker time: ${TIME_R}"
 echo "edep-sim time: ${TIME_E}"
-#echo "hdf5 time: ${TIME_H}"
+echo "hdf5 time: ${TIME_H}"
 echo "Copy time: ${TIME_C}"
