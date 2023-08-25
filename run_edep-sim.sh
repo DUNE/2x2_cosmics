@@ -26,8 +26,5 @@ TIME_HDF5=`date +%s`
 H5_FILE=${EDEP_FILE%.root}.h5
 python3 convert_edepsim_roottoh5.py ${EDEP_FILE} ${H5_FILE}
 
-ifdh_mkdir_p ${OUTDIR}/corsika/${RDIR}
-ifdh_mkdir_p ${OUTDIR}/rootracker/${RDIR}
-ifdh_mkdir_p ${OUTDIR}/edep/${RDIR}
-ifdh_mkdir_p ${OUTDIR}/h5/${RDIR}
-
+cp ${EDEP_FILE} ${OUTDIR}/edep/${RDIR}/${EDEP_FILE}
+cp ${H5_FILE} ${OUTDIR}/h5/${RDIR}/${H5_FILE}

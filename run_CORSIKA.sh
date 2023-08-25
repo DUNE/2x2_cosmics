@@ -33,21 +33,6 @@ fi
 echo "Using observation level of ${OBSLEV} cm and magnetic field values of Bx = ${Bx} and Bz = ${Bz} microteslas, corresponding to ${DETNAME}."
 
 TIME_START=`date +%s`
-CP="ifdh cp"
-
-# ifdhc doen't have a mkdir -p equivalent, which is fine 
-# as long as you always remember to include this convenient function in your scripts
-ifdh_mkdir_p() {
-    local dir=$1
-    local force=$2
-    if [ `ifdh ls $dir 0 $force | wc -l` -gt 0 ] 
-    then
-        : # we're done
-    else
-        ifdh_mkdir_p `dirname $dir` $force
-        ifdh mkdir $dir $force
-    fi
-}
 
 # edep-sim needs to know where a certain GEANT .cmake file is...
 G4_cmake_file=`find ${GEANT4_FQ_DIR}/lib64 -name 'Geant4Config.cmake'`
@@ -105,12 +90,12 @@ gen_corsika_config
 corsika77400Linux_QGSJET_fluka < corsika.cfg
 
 CORSIKA_FILE="corsika.${RNDSEED}.dat"
-ifdh_mkdir_p ${OUTDIR}/corsika/${RDIR}
-${CP} DAT000001 ${OUTDIR}/corsika/${RDIR}/${CORSIKA_FILE}
+mkdir -p ${OUTDIR}/corsika/${RDIR}
+cp DAT000001 ${OUTDIR}/corsika/${RDIR}/${CORSIKA_FILE}
 
 #### run corsika to rootracker converter
 # Get the binaries & other files that are needed
-${CP} ${INPUTDIR}/corsikaConverter corsikaConverter
+cp ${INPUTDIR}/corsikaConverter corsikaConverter
 chmod +x corsikaConverter
 
 export LD_LIBRARY_PATH=${PWD}/edep-sim/edep-gcc-6.4.0-x86_64-pc-linux-gnu/lib:${LD_LIBRARY_PATH}
@@ -133,8 +118,13 @@ cat << EOF > macro.mac
 /generator/add
 EOF
 
-ifdh_mkdir_p ${OUTDIR}/rootracker/${RDIR}
-ifdh_mkdir_p ${OUTDIR}/corsika/${RDIR}
-${CP} ${ROOTRACKER_FILE} ${OUTDIR}/rootracker/${RDIR}/${ROOTRACKER_FILE}
+mkdir -p ${OUTDIR}/rootracker/${RDIR}
+mkdir -p ${OUTDIR}/corsika/${RDIR}
+mkdir -p ${OUTDIR}/corsika/${RDIR}
+mkdir -p ${OUTDIR}/rootracker/${RDIR}
+mkdir -p ${OUTDIR}/edep/${RDIR}
+mkdir -p ${OUTDIR}/h5/${RDIR}
+
+cp ${ROOTRACKER_FILE} ${OUTDIR}/rootracker/${RDIR}/${ROOTRACKER_FILE}
 
 
