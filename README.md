@@ -24,4 +24,10 @@ Make sure to set `INPUTDIR` and `OUTDIR` to your own directories. `INPUTDIR` mus
 
 An alternative option for running the simulation is if you're producing MC for the Bern module tests. In this case you can use `run_everything_cosmics_at_FNAL_Module0.sh`, which is the same as the original script that was used to make the first cosmic samples for Module-0. This can run completely on a dunegpvm. We need to run the 2x2 simulation over on NERSC because the 2x2 requires a newer edep-sim version (used in the 2x2_sim) that supports the newest geometry. To run the 2x2 simulation on a dunegpvm (`run_everything_cosmics_at_FNAL_2x2.sh`), you will just need to install the compatible edep-sim version (if you want to take on this task, feel free to do so! :) ). 
 
+To run this script, you can do the following:
+```bash
+chmod +x run_everything_cosmics_at_FNAL_Module0.sh
+./run_everything_cosmics_at_FNAL_Module0.sh FIRST NSHOW TEST
+```
+
 2x2_sim: https://github.com/DUNE/2x2_sim
