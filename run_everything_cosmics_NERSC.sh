@@ -1,67 +1,54 @@
 #!/usr/bin/env bash
-INPUTDIR="/global/u1/s/sfogarty/2x2_cosmics_2/2x2_cosmics"
-OUTDIR="/global/cfs/cdirs/dune/users/sfogarty/cosmics/2x2"
-GEOMETRY=Merged2x2MINERvA_v3_withRock
-#GEOMETRY=Module0
-
-FIRST=$1
-NSHOW=$2
-DET=$3
-TEST=$4
+OUTDIR="/global/cfs/cdirs/dune/users/sfogarty/cosmics/single_module"
+DET=$1 # 0 for single Bern module, 1 for 2x2
+NSHOW=$2 # number of showers generated
 
 if [ "${NSHOW}" = "" ]; then
-NSHOW=2000000
-echo "NSHOW not specified, using $NSHOW"
+    NSHOW=2000000
+    echo "NSHOW not specified, generating $NSHOW showers"
 fi
 
-if [ "${FIRST}" = "" ]; then
-echo "First run number not specified, using 0"
-FIRST=0
+# set detector and geometry
+if [ "${DET}" = "0" ]; then
+    DET=0
+    GEOMETRY=Module0
+elif [ "${DET}" = "1" ]; then
+    DET=1
+    GEOMETRY=Merged2x2MINERvA_v3_withRock
+else
+    DET=1
+    GEOMETRY=Merged2x2MINERvA_v3_withRock
+    echo "DET not specified, using defaults."
 fi
+echo "DET set to ${DET}, GEOMETRY = ${GEOMETRY}"
 
-if [ "${TEST}" = "test" ]; then
-echo "Test mode"
-PROCESS=0
-mkdir -p test
-cd test
-fi
+# make folders for data in OUTDIR if they don't exist
+mkdir -p ${OUTDIR}/corsika
+mkdir -p ${OUTDIR}/edep
+mkdir -p ${OUTDIR}/h5
+mkdir -p ${OUTDIR}/rootracker
 
-RUNNO=$((${PROCESS}+${FIRST}))
-SEED=$((1000000*${PROCESS}+${RUNNO}))
-RANDOM=$SEED
-RNDSEED=$RANDOM
-RNDSEED2=$RANDOM
-echo "Random seeds are $SEED -> $RNDSEED $RNDSEED2"
+DATE=$(date +%s)
+SEED=$((${RANDOM}+${DATE}))
+RNDSEED=$SEED
+RNDSEED2=$SEED
+echo "Random seeds are $RNDSEED, $RNDSEED2"
 
-RDIR=$((${RUNNO} / 1000))
-if [ ${RUNNO} -lt 10000 ]; then
-RDIR=0$((${RUNNO} / 1000))
-fi
 TIME_START=`date +%s`
 echo "Setting to CORSIKA-friendly container."
 shifter --image=fermilab/fnal-wn-sl7:latest --module=cvmfs -- /bin/bash << EOF1
-set -e
 echo 'Setting up software'
-set +e
 source /cvmfs/mu2e.opensciencegrid.org/setupmu2e-art.sh
 source /cvmfs/dune.opensciencegrid.org/products/dune/setup_dune.sh
 setup edepsim v3_0_1 -q e19:prof
 setup corsika
-set -e
-cp ${INPUTDIR}/run_CORSIKA.sh run_CORSIKA.sh
 chmod +x run_CORSIKA.sh
-cp ${INPUTDIR}/run_edep-sim.sh run_edep-sim.sh
-cp ${INPUTDIR}/convert_edepsim_roottoh5.py convert_edepsim_roottoh5.py
-cp ${INPUTDIR}/requirements.txt requirements.txt
-cp ${INPUTDIR}/${GEOMETRY}.gdml ${GEOMETRY}.gdml
-echo 'Using geometry: ${GEOMETRY}.gdml'
-rm -f DAT000001
-./run_CORSIKA.sh $RDIR $NSHOW $DET $RNDSEED $RNDSEED2 $INPUTDIR $OUTDIR
+./run_CORSIKA.sh $NSHOW $DET $RNDSEED $RNDSEED2 $OUTDIR
 EOF1
 TIME_CORSIKA=`date +%s`
 TIME_A=$((${TIME_CORSIKA}-${TIME_START}))
 
-echo "Setting GENIE_edep-sim container."
+echo "Setting to GENIE_edep-sim container."
 shifter --image=mjkramer/sim2x2:genie_edep.3_04_00.20230620 --module=cvmfs -- /bin/bash << EOF2
 set +o posix
 source /environment
@@ -70,7 +57,7 @@ rm -rf convert.venv
 python3 -m venv convert.venv
 source convert.venv/bin/activate
 pip3 install -r requirements.txt
-./run_edep-sim.sh ${GEOMETRY} ${RNDSEED} $INPUTDIR $OUTDIR
+./run_edep-sim.sh $GEOMETRY $RNDSEED $OUTDIR
 EOF2
 TIME_EDEP=`date +%s`
 TIME_B=$((${TIME_EDEP}-${TIME_CORSIKA}))

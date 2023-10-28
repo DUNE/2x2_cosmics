@@ -4,15 +4,11 @@
 USERNAME=$USER
 GEOMETRY=$1
 RNDSEED=$2
-INPUTDIR=$3
-OUTDIR=$4
+OUTDIR=$3
 
 ROOTRACKER_FILE="rootracker.${RNDSEED}.root"
 NPER=$(echo "std::cout << gRooTracker->GetEntries() << std::endl;" | root -l -b ${ROOTRACKER_FILE} 2>/dev/null | tail -1)
 
-TIME_START=`date +%s`
-
-TIME_EDEPSIM=`date +%s`
 EDEP_FILE=edep.${RNDSEED}.root
 edep-sim \
     -C \
@@ -22,9 +18,9 @@ edep-sim \
     -e ${NPER} \
     macro.mac
 
-TIME_HDF5=`date +%s`
 H5_FILE=${EDEP_FILE%.root}.h5
-python3 convert_edepsim_roottoh5.py ${EDEP_FILE} ${H5_FILE}
+python3 dumpTree.py ${EDEP_FILE} ${H5_FILE}
 
-cp ${EDEP_FILE} ${OUTDIR}/edep/${RDIR}/${EDEP_FILE}
-cp ${H5_FILE} ${OUTDIR}/h5/${RDIR}/${H5_FILE}
+mv ${EDEP_FILE} ${OUTDIR}/edep/${EDEP_FILE}
+mv ${H5_FILE} ${OUTDIR}/h5/${H5_FILE}
+rm ${ROOTRACKER_FILE}

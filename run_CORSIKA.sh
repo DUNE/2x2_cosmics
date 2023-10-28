@@ -3,13 +3,11 @@
 
 USERNAME=$USER
 
-RDIR=$1
-NSHOW=$2
-DET=$3
-RNDSEED=$4
-RNDSEED2=$5
-INPUTDIR=$6
-OUTDIR=$7
+NSHOW=$1
+DET=$2
+RNDSEED=$3
+RNDSEED2=$4
+OUTDIR=$5
 
 if [ "${DET}" == "0" ]; then
 # Bern (single module tests)
@@ -43,6 +41,16 @@ export PATH=$PATH:$GEANT4_FQ_DIR/bin
 
 ##################################################
 
+# set RUNNUMBER, iterate by 1 if it already exists
+RUNNUMBER=1
+while true; do
+    if [ -f "DAT00000${RUNNUMBER}" ]; then
+        RUNNUMBER=$((${RUNNUMBER} + 1))
+    else
+        break
+    fi
+done
+
 # Run CORSIKA
 echo "Running corsika"
 
@@ -50,7 +58,7 @@ TIME_CORSIKA=`date +%s`
 
 gen_corsika_config() {
 cat << EOF > corsika.cfg
-RUNNR   1                              run number
+RUNNR   ${RUNNUMBER}                              run number
 EVTNR   1                              number of first shower event
 NSHOW   ${NSHOW}                        number of showers to generate
 PRMPAR  14                             particle type of prim. particle  (14=p)
@@ -90,23 +98,18 @@ gen_corsika_config
 corsika77400Linux_QGSJET_fluka < corsika.cfg
 
 CORSIKA_FILE="corsika.${RNDSEED}.dat"
-mkdir -p ${OUTDIR}/corsika/${RDIR}
-cp DAT000001 ${OUTDIR}/corsika/${RDIR}/${CORSIKA_FILE}
+cp DAT00000${RUNNUMBER} ${OUTDIR}/corsika/${CORSIKA_FILE}
 
 #### run corsika to rootracker converter
-# Get the binaries & other files that are needed
-cp ${INPUTDIR}/corsikaConverter corsikaConverter
 chmod +x corsikaConverter
-
 export LD_LIBRARY_PATH=${PWD}/edep-sim/edep-gcc-6.4.0-x86_64-pc-linux-gnu/lib:${LD_LIBRARY_PATH}
 export PATH=${PWD}/edep-sim/edep-gcc-6.4.0-x86_64-pc-linux-gnu/bin:${PATH}
 
 echo "Running corsika2RooTracker"
-
-./corsikaConverter DAT000001
+./corsikaConverter DAT00000${RUNNUMBER}
 
 ROOTRACKER_FILE="rootracker.${RNDSEED}.root"
-mv DAT000001.root ${ROOTRACKER_FILE}
+mv DAT00000${RUNNUMBER}.root ${ROOTRACKER_FILE}
 
 cat << EOF > macro.mac
 /generator/kinematics/set rooTracker
@@ -118,13 +121,5 @@ cat << EOF > macro.mac
 /generator/add
 EOF
 
-mkdir -p ${OUTDIR}/rootracker/${RDIR}
-mkdir -p ${OUTDIR}/corsika/${RDIR}
-mkdir -p ${OUTDIR}/corsika/${RDIR}
-mkdir -p ${OUTDIR}/rootracker/${RDIR}
-mkdir -p ${OUTDIR}/edep/${RDIR}
-mkdir -p ${OUTDIR}/h5/${RDIR}
-
-cp ${ROOTRACKER_FILE} ${OUTDIR}/rootracker/${RDIR}/${ROOTRACKER_FILE}
-
-
+cp ${ROOTRACKER_FILE} ${OUTDIR}/rootracker/${ROOTRACKER_FILE}
+rm DAT00000${RUNNUMBER}
