@@ -40,10 +40,7 @@ export Geant4_DIR=`dirname $G4_cmake_file`
 export PATH=$PATH:$GEANT4_FQ_DIR/bin
 
 ##################################################
-
-# set RUNNUMBER, iterate by 1 if it already exists
-RUNNUMBER=${RNDSEED}
-RUNNUMBER_CORSIKA="${RUNNUMBER: -5}"
+RUNNUMBER="${RNDSEED: -5}"
 # Run CORSIKA
 echo "Running corsika"
 
@@ -51,7 +48,7 @@ TIME_CORSIKA=`date +%s`
 
 gen_corsika_config() {
 cat << EOF > corsika_${RNDSEED}.cfg
-RUNNR   ${RUNNUMBER_CORSIKA}                              run number
+RUNNR   ${RUNNUMBER}                              run number
 EVTNR   1                              number of first shower event
 NSHOW   ${NSHOW}                        number of showers to generate
 PRMPAR  14                             particle type of prim. particle  (14=p)
@@ -91,7 +88,7 @@ gen_corsika_config
 corsika77400Linux_QGSJET_fluka < corsika_${RNDSEED}.cfg
 
 CORSIKA_FILE="corsika.${RNDSEED}.dat"
-cp DAT${RUNNUMBER} ${OUTDIR}/corsika/${CORSIKA_FILE}
+cp DAT0${RUNNUMBER} ${OUTDIR}/corsika/${CORSIKA_FILE}
 
 #### run corsika to rootracker converter
 chmod +x corsikaConverter
@@ -99,10 +96,10 @@ export LD_LIBRARY_PATH=${PWD}/edep-sim/edep-gcc-6.4.0-x86_64-pc-linux-gnu/lib:${
 export PATH=${PWD}/edep-sim/edep-gcc-6.4.0-x86_64-pc-linux-gnu/bin:${PATH}
 
 echo "Running corsika2RooTracker"
-./corsikaConverter DAT${RUNNUMBER}
+./corsikaConverter DAT0${RUNNUMBER}
 
 ROOTRACKER_FILE="rootracker.${RNDSEED}.root"
-mv DAT${RUNNUMBER}.root ${ROOTRACKER_FILE}
+mv DAT0${RUNNUMBER}.root ${ROOTRACKER_FILE}
 
 cat << EOF > macro_${RNDSEED}.mac
 /generator/kinematics/set rooTracker
@@ -115,4 +112,4 @@ cat << EOF > macro_${RNDSEED}.mac
 EOF
 
 cp ${ROOTRACKER_FILE} ${OUTDIR}/rootracker/${ROOTRACKER_FILE}
-rm DAT${RUNNUMBER}
+rm DAT0${RUNNUMBER}
