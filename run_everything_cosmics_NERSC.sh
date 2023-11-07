@@ -50,7 +50,7 @@ TIME_CORSIKA=`date +%s`
 TIME_A=$((${TIME_CORSIKA}-${TIME_START}))
 
 echo "Setting to GENIE_edep-sim container."
-shifter --image=mjkramer/sim2x2:genie_edep.3_04_00.20230620 --module=cvmfs -- /bin/bash << EOF2
+shifter --image=mjkramer/sim2x2:genie_edep.3_04_00.20230912 --module=cvmfs -- /bin/bash << EOF2
 set +o posix
 source /environment
 chmod +x run_edep-sim.sh
