@@ -16,7 +16,7 @@ edep-sim \
     -o ${EDEP_FILE} \
     -u \
     -e ${NPER} \
-    macro.mac
+    macro_${RNDSEED}.mac
 
 H5_FILE=${EDEP_FILE%.root}.h5
 python3 dumpTree.py ${EDEP_FILE} ${H5_FILE}

@@ -50,7 +50,7 @@ echo "Running corsika"
 TIME_CORSIKA=`date +%s`
 
 gen_corsika_config() {
-cat << EOF > corsika.cfg
+cat << EOF > corsika_${RNDSEED}.cfg
 RUNNR   ${RUNNUMBER_CORSIKA}                              run number
 EVTNR   1                              number of first shower event
 NSHOW   ${NSHOW}                        number of showers to generate
@@ -88,7 +88,7 @@ EOF
 }
 gen_corsika_config
 
-corsika77400Linux_QGSJET_fluka < corsika.cfg
+corsika77400Linux_QGSJET_fluka < corsika_${RNDSEED}.cfg
 
 CORSIKA_FILE="corsika.${RNDSEED}.dat"
 cp DAT${RUNNUMBER} ${OUTDIR}/corsika/${CORSIKA_FILE}
@@ -104,7 +104,7 @@ echo "Running corsika2RooTracker"
 ROOTRACKER_FILE="rootracker.${RNDSEED}.root"
 mv DAT${RUNNUMBER}.root ${ROOTRACKER_FILE}
 
-cat << EOF > macro.mac
+cat << EOF > macro_${RNDSEED}.mac
 /generator/kinematics/set rooTracker
 /generator/kinematics/rooTracker/input ${ROOTRACKER_FILE}
 /generator/position/set free
