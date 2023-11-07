@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-OUTDIR="/global/cfs/cdirs/dune/users/sfogarty/cosmics/single_module"
+INPUTDIR="/global/homes/s/sfogarty/2x2_cosmics"
+OUTDIR="/pscratch/sd/s/sfogarty/cosmics/single_module"
 DET=$1 # 0 for single Bern module, 1 for 2x2
 NSHOW=$2 # number of showers generated
 
@@ -53,10 +54,7 @@ shifter --image=mjkramer/sim2x2:genie_edep.3_04_00.20230620 --module=cvmfs -- /b
 set +o posix
 source /environment
 chmod +x run_edep-sim.sh
-rm -rf convert.venv
-python3 -m venv convert.venv
 source convert.venv/bin/activate
-pip3 install -r requirements.txt
 ./run_edep-sim.sh $GEOMETRY $RNDSEED $OUTDIR
 EOF2
 TIME_EDEP=`date +%s`
