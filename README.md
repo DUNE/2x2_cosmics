@@ -12,15 +12,26 @@ Subsequent steps (e.g. larnd-sim, ndlar_flow) are not performed here (currently)
 
 There are a few options for running the simulation. The first is running completely at NERSC. This method relies on shifter and containers available on NERSC, so it may not be easily run elsewhere (e.g. SLAC SDF, dunegpvm). `run_everything_cosmics_NERSC.sh` is a script that acts as a wrapper that runs each stage above, this is because we need to switch containers between steps 2 and 3. This script was adapted from on a script run on a dunegpvm for the Bern module runs (`run_everything_cosmics_at_FNAL.sh`). 
 
-The script can be run on the command line like this:
+Before running the script, make the container by running `source setup_container.sh`. 
+To run the script on the command line (i.e. not in a job submission), you can do the following:
 ```bash
 chmod +x run_everything_cosmics_NERSC.sh
-./run_everything_cosmics_NERSC.sh DET NSHOW
+./run_everything_cosmics_NERSC.sh DET NSHOWERS
+```
+DET is 0 for a Bern module and 1 for 2x2. NSHOWERS is the number of showers to generate, defaults to 2000000.
+
+To submit a job on NERSC you can do the following:
+```bash
+sbatch --array=1-N -q shared -A dune -t T -C cpu run_everything_cosmics_NERSC.sh DET NSHOWERS
 ```
 
-DET is 0 for a Bern module and 1 for 2x2. NSHOW is the number of showers to generate, defaults to 2000000.
+Replace N by the number of jobs you want to submit. T is the time limit (in minutes) for the jobs. So for a Bern single module you could do:
+```bash
+sbatch --array=1-25 -q shared -A dune -t 200 -C cpu run_everything_cosmics_NERSC.sh 0 2000000
+```
+To do a simple check-in on your jobs, you can run `squeue -u $USER`.
 
-Make sure to set `OUTDIR` to your own directories. `INPUTDIR` must contain the various inputs, including `run_CORSIKA.sh`, `run_edep-sim.sh`, and `corsikaConverter` from this repository. It should also contain the GDML geometry to use in edep-sim, the root to h5 converter script (e.g. `dumpTree.py`), and `requirements.txt` for the root to h5 converter. `OUTDIR` is where the data is copied to, so all the files produced by various grid jobs will be directed to this directory to be stored. 
+The script should be run in the 2x2_cosmics directory. Make sure to set `OUTDIR` to your own directories. This directory should contain the relavent inputs, like the detector geometry, larndsim `requirements.txt` (for root to h5 conversion). `OUTDIR` is where the data is copied to, so all the files produced by the jobs will be directed to this directory to be stored (make sure to change to your personal directory). 
 
 An alternative option for running the simulation is if you're producing MC for the Bern module tests. In this case you can use `run_everything_cosmics_at_FNAL_Module0.sh`, which is the same as the original script that was used to make the first cosmic samples for Module-0. This can run completely on a dunegpvm. We need to run the 2x2 simulation over on NERSC because the 2x2 requires a newer edep-sim version (used in the 2x2_sim) that supports the newest geometry. To run the 2x2 simulation on a dunegpvm (`run_everything_cosmics_at_FNAL_2x2.sh`), you will just need to install the compatible edep-sim version (if you want to take on this task, feel free to do so! :) ). 
 
