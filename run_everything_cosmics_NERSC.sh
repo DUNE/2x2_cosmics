@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-INPUTDIR="/global/homes/s/sfogarty/2x2_cosmics"
-OUTDIR="/pscratch/sd/s/sfogarty/cosmics/single_module"
+INPUTDIR="/global/cfs/cdirs/dune/users/ehinkle/nd_prototypes_ana/2x2_cosmics"
+OUTDIR="/pscratch/sd/e/ehinkle/nd_ana/cosmics_sim/single_module"
 DET=$1 # 0 for single Bern module, 1 for 2x2
 NSHOW=$2 # number of showers generated
 

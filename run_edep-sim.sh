@@ -6,8 +6,10 @@ GEOMETRY=$1
 RNDSEED=$2
 OUTDIR=$3
 
-ROOTRACKER_FILE="rootracker.${RNDSEED}.root"
+ROOTRACKER_FILE="/pscratch/sd/e/ehinkle/nd_ana/cosmics_sim/single_module/rootracker/rootracker.${RNDSEED}.root"
 NPER=$(echo "std::cout << gRooTracker->GetEntries() << std::endl;" | root -l -b ${ROOTRACKER_FILE} 2>/dev/null | tail -1)
+
+echo "NPER is ${NPER}"
 
 EDEP_FILE=edep.${RNDSEED}.root
 edep-sim \
@@ -23,4 +25,4 @@ python3 dumpTree.py ${EDEP_FILE} ${H5_FILE}
 
 mv ${EDEP_FILE} ${OUTDIR}/edep/${EDEP_FILE}
 mv ${H5_FILE} ${OUTDIR}/h5/${H5_FILE}
-rm ${ROOTRACKER_FILE}
+#rm ${ROOTRACKER_FILE}
