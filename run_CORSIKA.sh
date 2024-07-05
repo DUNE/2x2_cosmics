@@ -89,27 +89,3 @@ corsika77400Linux_QGSJET_fluka < corsika_${RNDSEED}.cfg
 
 CORSIKA_FILE="corsika.${RNDSEED}.dat"
 cp DAT0${RUNNUMBER} ${OUTDIR}/corsika/${CORSIKA_FILE}
-
-#### run corsika to rootracker converter
-chmod +x corsikaConverter
-export LD_LIBRARY_PATH=${PWD}/edep-sim/edep-gcc-6.4.0-x86_64-pc-linux-gnu/lib:${LD_LIBRARY_PATH}
-export PATH=${PWD}/edep-sim/edep-gcc-6.4.0-x86_64-pc-linux-gnu/bin:${PATH}
-
-echo "Running corsika2RooTracker"
-./corsikaConverter DAT0${RUNNUMBER}
-
-ROOTRACKER_FILE="rootracker.${RNDSEED}.root"
-mv DAT0${RUNNUMBER}.root ${ROOTRACKER_FILE}
-
-cat << EOF > macro_${RNDSEED}.mac
-/generator/kinematics/set rooTracker
-/generator/kinematics/rooTracker/input ${ROOTRACKER_FILE}
-/generator/position/set free
-/generator/time/set fixed
-/generator/count/fixed/number 1
-/generator/count/set fixed
-/generator/add
-EOF
-
-cp ${ROOTRACKER_FILE} ${OUTDIR}/rootracker/${ROOTRACKER_FILE}
-rm DAT0${RUNNUMBER}

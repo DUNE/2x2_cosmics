@@ -41,26 +41,36 @@ shifter --image=fermilab/fnal-wn-sl7:latest --module=cvmfs -- /bin/bash << EOF1
 echo 'Setting up software'
 source /cvmfs/mu2e.opensciencegrid.org/setupmu2e-art.sh
 source /cvmfs/dune.opensciencegrid.org/products/dune/setup_dune.sh
-setup edepsim v3_0_1 -q e19:prof
 setup corsika
 chmod +x run_CORSIKA.sh
 ./run_CORSIKA.sh $NSHOW $DET $RNDSEED $RNDSEED2 $OUTDIR
 EOF1
 TIME_CORSIKA=`date +%s`
 TIME_A=$((${TIME_CORSIKA}-${TIME_START}))
-echo "Setting to GENIE_edep-sim container."
+
+echo "Setting to 2x2 sim container for corsikaConverter."
 shifter --image=mjkramer/sim2x2:ndlar011 --module=cvmfs -- /bin/bash << EOF2
 set +o posix
 source /opt/environment
-chmod +x run_edep-sim.sh
-source convert.venv/bin/activate
-./run_edep-sim.sh $GEOMETRY $RNDSEED $OUTDIR
+chmod +x run_corsikaConverter.sh
+./run_corsikaConverter.sh $RNDSEED $OUTDIR
 EOF2
+TIME_CONVERTER=`date +%s`
+TIME_B=$((${TIME_CONVERTER}-${TIME_CORSIKA}))
+
+echo "Setting to 2x2 sim container for running edep-sim."
+shifter --image=mjkramer/sim2x2:ndlar011 --module=cvmfs -- /bin/bash << EOF3
+set +o posix
+source /opt/environment
+chmod +x run_edep-sim.sh
+./run_edep-sim.sh $GEOMETRY $RNDSEED $OUTDIR
+EOF3
 TIME_EDEP=`date +%s`
-TIME_B=$((${TIME_EDEP}-${TIME_CORSIKA}))
+TIME_C=$((${TIME_EDEP}-${TIME_CONVERTER}))
 
 TIME_STOP=`date +%s`
 TIME_TOTAL=$((${TIME_STOP}-${TIME_START}))
-echo "Time to run CORSIKA and corsikaConverter = ${TIME_A} seconds"
-echo "Time to run edep-sim and h5 converter = ${TIME_B} seconds"
+echo "Time to run CORSIKA = ${TIME_A} seconds"
+echo "Time to run corsikaConverter = ${TIME_B} seconds"
+echo "Time to run edep-sim and h5 converter = ${TIME_C} seconds"
 echo "Total time elapsed = ${TIME_TOTAL} seconds"
